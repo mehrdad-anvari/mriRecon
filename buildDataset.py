@@ -25,9 +25,9 @@ for i in range(len(ls_files_OT)):
     img_OT = np.pad(img_OT,((8,9),(8,9),(0,0)))
 
     for j in range(2,img_T1.shape[2]-2):
-        nonZeroRatio = np.sum((img_OT[:,:,j]>0).flatten())
+        nonZeroRatio = np.sum((img_T1[:,:,j]>0).flatten())
         # print(nonZeroRatio)
-        if nonZeroRatio > 100:
+        if nonZeroRatio > 0.1*240*240:
             dataUnit[:,:,0] = img_T1[:,:,j-1]
             dataUnit[:,:,1] = img_T1[:,:,j]
             dataUnit[:,:,2] = img_T1[:,:,j+1]
