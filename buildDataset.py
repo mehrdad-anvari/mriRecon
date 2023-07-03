@@ -12,6 +12,8 @@ ls_files_OT = glob.glob('/content/BRATS2015_Training/*/*/*OT.*/*.mha')
 dataUnit = np.zeros((257,257,7))
 
 for i in range(len(ls_files_OT)):
+    if i%10 == 0:
+      print(f'{i}/{len(ls_files_OT)}')
     
     img_T1,header = load(ls_files_T1[i])
     img_T2,header = load(ls_files_T2[i])
