@@ -4,9 +4,13 @@ from torch.utils.data import Dataset, DataLoader
 from medpy.io import load, save
 from scipy.io import savemat, loadmat
 from torchvision import transforms 
+import numpy as np
 
 device = torch.device("cuda:0" if (torch.cuda.is_available() and 1 > 0) else "cpu")
 print('device is {}'.format(device))
+
+train_root = '/content/BRATS2015_Training_Processed/train/'
+validation_root =  '/content/BRATS2015_Training_Processed/test/'
 
 mdict = loadmat("/content/mriRecon/PosEncode.mat")
 PosEncoding = mdict["PositionalEncoding"]
@@ -37,8 +41,9 @@ class Brats2013_2D(Dataset):
 
     def __getitem__(self, idx):
         img_path, LayerNum = self.data[idx]
-        image, image_header = load(img_path)
-        image = torch.tensor(image).cuda().to(torch.float32)
+        data, image_header = load(img_path)
+        data = np.transpose(data,(2,0,1))
+        image = torch.tensor(data[0:6,:,:]).to(device).to(torch.float32)
         image_fft_r,image_fft_i = cal_fft_for_all_channels(image)
         image_fft_r = torch.tensor(image_fft_r)
         image_fft_i = torch.tensor(image_fft_i)

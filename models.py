@@ -210,5 +210,5 @@ class KspaceNetT1(nn.Module):
         return x
     
 
-netG = u_net_bn(1).to(device)
-summary(netG, input_size=(2, 257, 257))
+# netG = u_net_bn(1).to(device)
+# summary(netG, input_size=(2, 257, 257))

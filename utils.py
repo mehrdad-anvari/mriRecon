@@ -7,8 +7,8 @@ from medpy.io import save, load
 save_to_dir = ''
 
 def load_mask(mask_name):
-    dir = 'C:\\Users\\mehrdad\\MS_projects\\mask\\Build mask'
-    matfile = scipy.io.loadmat(dir + '\\{}.mat'.format(mask_name)) 
+    dir = '/content/mriRecon/mask'
+    matfile = scipy.io.loadmat(dir + '/{}.mat'.format(mask_name)) 
     print(type(matfile))
     print(matfile.keys())
     mask = np.zeros((6,257,257))
