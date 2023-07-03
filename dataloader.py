@@ -3,8 +3,10 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from medpy.io import load, save
 from scipy.io import savemat, loadmat
-from torchvision import transforms
+from torchvision import transforms 
 
+device = torch.device("cuda:0" if (torch.cuda.is_available() and 1 > 0) else "cpu")
+print('device is {}'.format(device))
 
 mdict = loadmat("C:/Users/mehrdad/KSpaceNet/PosEncode.mat")
 PosEncoding = mdict["PositionalEncoding"]
