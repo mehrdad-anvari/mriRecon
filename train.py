@@ -12,9 +12,14 @@ import torchvision.utils as vutils
 from scipy.io import savemat
 
 
-kmodel_dir1 = ''
-kmodel_dir2 = ''
-save_to_dir = ''
+kmodel_dir1 = '/content/mriRecon/trainedModels/modelt1.pt'
+kmodel_dir2 = '/content/mriRecon/trainedModels/modelt2.pt'
+save_to_dir = '/content/drive/MyDrive/trainedModels/Unet/T2/20/'
+
+mask = utils.load_mask('GaussianDistribution1DMask_10_257')
+# mask = load_mask('UniformDistribution1DMask_30_257')
+# mask = load_mask('Deterministic1DMask_40_257')
+mask_c = 1 - mask
 
 ngpu = 1
 lr = 0.0001
@@ -44,10 +49,7 @@ MSE_FFT = []
 MSE_IMG = []
 iter_T = []
 
-mask = utils.load_mask('GaussianDistribution1DMask_10_257')
-# mask = load_mask('UniformDistribution1DMask_30_257')
-# mask = load_mask('Deterministic1DMask_40_257')
-mask_c = 1 - mask
+
 
 torch.cuda.empty_cache()
 
@@ -60,8 +62,8 @@ dataloader_val = dl.DataLoader(dataset_val, batch_size=batch_size, shuffle=True,
 
 device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
 
-Pred_slice = 1
-Pred_slice_feed = 0
+Pred_slice = 4
+Pred_slice_feed = 1
 image_fft_r, image_fft_i, image, LayerNum, PosEncoding  = next(iter(dataloader_val))
 
 mask = torch.tensor(mask).to(device)
@@ -155,6 +157,13 @@ def cal_losses(fake1,good_imgs1,Pred_slice):
     
     return errG_fft, errG_mse, fake1
 
+def cal_psnr_ssim(fake,good_imgs,batch_size):
+    PSNR_t = 0 
+    SSIM_t = 0
+    for ii in range(batch_size):
+        PSNR_t = psnr(fake[ii,:,:,:][np.newaxis,:,:,:], good_imgs[ii,:,:,:][np.newaxis,:,:,:]).cpu().item() + PSNR_t
+        SSIM_t = ssim(fake[ii,:,:,:][np.newaxis,:,:,:], good_imgs[ii,:,:,:][np.newaxis,:,:,:]).cpu().item() + SSIM_t
+    return PSNR_t/batch_size , SSIM_t/batch_size
 
 T1_pred = infer_using_KspaceNet(image_fft_r,image_fft_i,LayerNum,model=model1,mask=mask,mask_c=mask_c,t_c=4,t_p=1,PosEncoding=PosEncoding.to(device))
 T2_pred = infer_using_KspaceNet(image_fft_r,image_fft_i,LayerNum,model=model2,mask=mask,mask_c=mask_c,t_c=1,t_p=4,PosEncoding=PosEncoding.to(device))
@@ -162,6 +171,9 @@ utils.imshow(vutils.make_grid((T1_pred).detach().cpu(), padding=2, nrow=5, norma
 utils.imshow(vutils.make_grid((T2_pred).detach().cpu(), padding=2, nrow=5, normalize=True), batch_size, 'T2_pred', cmap = 'gray')
 fix_bad_imgs  = torch.concat((T1_pred,T2_pred),dim=1).cuda()
 fix_good_imgs = image[:,Pred_slice,:,:][:,np.newaxis,:,:].cuda()
+psnrValue , ssimValue = cal_psnr_ssim(fix_bad_imgs[:,1,:,:][:,np.newaxis,:,:],fix_good_imgs,batch_size)
+print(psnrValue)
+print(ssimValue)
 clip = torch.ones_like(fix_good_imgs).to(device) * 0.2
 utils.imshow(vutils.make_grid(torch.minimum(clip,torch.abs(fix_good_imgs-T1_pred)).detach().cpu(), padding=2, nrow=5, normalize=True), batch_size, 'T1_pred_diff', cmap = 'jet')
 utils.imshow(vutils.make_grid(fix_good_imgs.detach().cpu(), padding=2, nrow=5, normalize=True), batch_size, 'ground_truth', cmap = 'gray')
@@ -204,8 +216,9 @@ for epoch in range(n_epoch):
             if i % 10 == 0: 
                 MSE_IMG.append(errG_mse.item())
                 MSE_FFT.append(errG_fft.item())
-                PSNR.append(psnr(fake, image[:,Pred_slice,:,:][:,np.newaxis,:,:]).cpu())
-                SSIM.append(ssim(fake, image[:,Pred_slice,:,:][:,np.newaxis,:,:]).cpu())
+                psnrValue , ssimValue = cal_psnr_ssim(fake,good_imgs,batch_size)
+                PSNR.append(psnrValue)
+                SSIM.append(ssimValue)
                 iter_T.append(t_iters)
                 print('Elapsed time = {}'.format(time.time() - intialTime))
                 intialTime = time.time()
@@ -252,8 +265,7 @@ for epoch in range(n_epoch):
                         errG_fft, errG_mse, fake = cal_losses(fake,good_imgs,Pred_slice)
                         errG =  errG_mse + errG_fft
 
-                        psnrValue = psnr(fake, image[:,Pred_slice,:,:][:,np.newaxis,:,:]).cpu()
-                        ssimValue = ssim(fake, image[:,Pred_slice,:,:][:,np.newaxis,:,:]).cpu()
+                        psnrValue , ssimValue = cal_psnr_ssim(fake,good_imgs,batch_size)
 
                         PSNR_Vt = PSNR_Vt + psnrValue.item()
                         SSIM_Vt = SSIM_Vt + ssimValue.item()
@@ -275,12 +287,7 @@ for epoch in range(n_epoch):
                     clip = torch.ones_like(fake).to(device) * 0.2
                     print(f'sum of error: {torch.sum(torch.abs(fix_good_imgs-fake))}')
                     print(f'psnr of fixed: { psnr(fake, fix_good_imgs).cpu()}')
-                    utils.imshow(vutils.make_grid((fake).detach().cpu(), padding=2, nrow=5, normalize=True),
-                                            batch_size, '{}_{}_{:.4f}_{:.4f}_fix'.format(epoch, i, PSNR_V[-1], SSIM_V[-1]), cmap = 'gray')
-                    utils.imshow(vutils.make_grid(torch.abs(fix_good_imgs-fake).detach().cpu(), padding=2, nrow=5, normalize=True),
-                                            batch_size, '{}_{}_{:.4f}_{:.4f}_diff'.format(epoch, i, PSNR_V[-1], SSIM_V[-1]), cmap = 'gray')
-                    utils.imshow(vutils.make_grid(torch.minimum(clip,torch.abs(fix_good_imgs-fake)).detach().cpu(), padding=2, nrow=5, normalize=True),
-                                            batch_size, '{}_{}_{:.4f}_{:.4f}_diff_clipped'.format(epoch, i, PSNR_V[-1], SSIM_V[-1]), cmap = 'jet')                        
+                              
                     if len(PSNR_V) > 1:
                         print(f"max:{np.max(PSNR_V[0:-1])},current:{PSNR_Vt/normalizing_factor}")
                         if PSNR_Vt/normalizing_factor > np.max(PSNR_V[0:-1]):
