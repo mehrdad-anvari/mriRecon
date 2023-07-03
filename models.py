@@ -62,27 +62,22 @@ class u_net_bn(nn.Module):
         x = self.conv1(x)
         c1 = nn.LeakyReLU(0.2)(x)
 
-        
         x = self.conv2(x)
         x = self.batch_conv2(x)
         c2 = nn.LeakyReLU(0.2)(x)
 
-        
         x = self.conv3(c2)
         x = self.batch_conv3(x)
         c3 = nn.LeakyReLU(0.2)(x)
 
-        
         x = self.conv4(x)
         x = self.batch_conv4(x)
         c4 = nn.LeakyReLU(0.2)(x)
 
-        
         x = self.conv5(c4)
         x = self.batch_conv5(x)
         c5 = nn.LeakyReLU(0.2)(x)
 
-        
         x = self.conv6(c5)
         x = self.batch_conv6(x)
         c6 = nn.LeakyReLU(0.2)(x)
@@ -106,25 +101,22 @@ class u_net_bn(nn.Module):
         x = self.up5(x)
         x = self.batch_up5(x)
         u5 = nn.ReLU()(x)
-
     
         x = torch.concat((u5, c5), dim=1)
         x = self.up4(x)
         x = self.batch_up4(x)
         u4 = nn.ReLU()(x)
-
         
         x = torch.concat((u4, c4), dim=1)
         x = self.up3(x)
         x = self.batch_up3(x)
         u3 = nn.ReLU()(x)
-
         
         x = torch.concat((u3, c3), dim=1)
         x = self.up2(x)
         x = self.batch_up2(x)
         u2 = nn.ReLU()(x)
-        
+
         x = torch.concat((u2, c2), dim=1)
         x = self.up1(x)
         x = self.batch_up1(x)
@@ -140,7 +132,6 @@ class u_net_bn(nn.Module):
         x = self.outLayer(x)
         x = nn.Tanh()(x)
         return x
-
 
 class KspaceNetT1(nn.Module):
     def __init__(self,ngpu):
