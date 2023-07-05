@@ -57,7 +57,7 @@ batch_size = 10
 dataset = dl.Brats2013_2D(root=dl.train_root, PE= dl.PosEncoding)
 dataset_val = dl.Brats2013_2D(root=dl.validation_root , PE= dl.PosEncoding)
 dataloader = dl.DataLoader(dataset, batch_size=batch_size, shuffle=True, pin_memory=False,drop_last=True)
-dataloader_val = dl.DataLoader(dataset_val, batch_size=batch_size, shuffle=True,pin_memory=False,drop_last=False)
+dataloader_val = dl.DataLoader(dataset_val, batch_size=batch_size, shuffle=True,pin_memory=False,drop_last=True)
 
 
 device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
@@ -160,7 +160,7 @@ def cal_losses(fake1,good_imgs1,Pred_slice):
 def cal_psnr_ssim(fake,good_imgs,batch_size):
     PSNR_t = 0 
     SSIM_t = 0
-    for ii in range(batch_size):
+    for ii in range(fake.shape[0]):
         PSNR_t = psnr(fake[ii,:,:,:][np.newaxis,:,:,:], good_imgs[ii,:,:,:][np.newaxis,:,:,:]).cpu().item() + PSNR_t
         SSIM_t = ssim(fake[ii,:,:,:][np.newaxis,:,:,:], good_imgs[ii,:,:,:][np.newaxis,:,:,:]).cpu().item() + SSIM_t
     return PSNR_t/batch_size , SSIM_t/batch_size
