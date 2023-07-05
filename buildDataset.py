@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import glob
 
 
-save_dir = '/content/BRATS2015_Training_Processed'
+save_dir = '/content/drive/MyDrive/BRATS2015_Training_Processed'
 ls_files_T1 = glob.glob('/content/BRATS2015_Training/*/*/*MR_T1.*/*.mha')
 ls_files_T2 = glob.glob('/content/BRATS2015_Training/*/*/*MR_T1.*/*.mha')
 ls_files_OT = glob.glob('/content/BRATS2015_Training/*/*/*OT.*/*.mha')

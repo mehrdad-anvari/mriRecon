@@ -267,8 +267,8 @@ for epoch in range(n_epoch):
 
                         psnrValue , ssimValue = cal_psnr_ssim(fake,good_imgs,batch_size)
 
-                        PSNR_Vt = PSNR_Vt + psnrValue.item()
-                        SSIM_Vt = SSIM_Vt + ssimValue.item()
+                        PSNR_Vt = PSNR_Vt + psnrValue
+                        SSIM_Vt = SSIM_Vt + ssimValue
                         MSE_FFT_Vt = MSE_FFT_Vt + errG_mse.item()
                         MSE_IMG_Vt = MSE_IMG_Vt + errG_fft.item()
                     
