@@ -9,8 +9,8 @@ import numpy as np
 device = torch.device("cuda:0" if (torch.cuda.is_available() and 1 > 0) else "cpu")
 print('device is {}'.format(device))
 
-train_root = '/content/drive/MyDrive/BRATS2015_Training_Processed/train/'
-validation_root =  '/content/drive/MyDrive/BRATS2015_Training_Processed/test/'
+train_root = '/content/BRATS2015_Training_Processed/train/'
+validation_root =  '/content/BRATS2015_Training_Processed/test/'
 
 mdict = loadmat("/content/mriRecon/PosEncode.mat")
 PosEncoding = mdict["PositionalEncoding"]
