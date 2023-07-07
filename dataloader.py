@@ -33,14 +33,16 @@ class Brats2013_2D(Dataset):
         file_list = glob.glob(root + "*.mha")
         self.data = []
         for file_path in file_list:
-            layer_name = file_path.split("\\")[-1].split(".")[-2].split("_")[-1]
-            self.data.append([file_path, int(layer_name)])
+            layer_num = file_path.split("\\")[-1].split(".")[-2].split("_")[-1]
+            subject_num = file_path.split("\\")[-1].split(".")[-2].split("_")[-2]
+            print(subject_num)
+            self.data.append([file_path, int(layer_num), int(subject_num)])
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        img_path, LayerNum = self.data[idx]
+        img_path, LayerNum, subjectNum = self.data[idx]
         data, image_header = load(img_path)
         data = np.transpose(data,(2,0,1))
         image = torch.tensor(data[0:6,:,:]).to(device).to(torch.float32)
@@ -48,4 +50,8 @@ class Brats2013_2D(Dataset):
         image_fft_r = torch.tensor(image_fft_r)
         image_fft_i = torch.tensor(image_fft_i)
         image = torch.tensor(image)
-        return image_fft_r, image_fft_i, image, torch.tensor(LayerNum), torch.tensor(self.positionalEncoding)
+        return image_fft_r, image_fft_i, image, torch.tensor(LayerNum), torch.tensor(subjectNum), torch.tensor(self.positionalEncoding)
+    
+    
+dataset_val = Brats2013_2D(root=validation_root , PE= PosEncoding)
+dataloader_val = DataLoader(dataset_val, batch_size=10, shuffle=True,pin_memory=False,drop_last=True)

@@ -64,7 +64,7 @@ device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
 
 Pred_slice = 4
 Pred_slice_feed = 1
-image_fft_r, image_fft_i, image, LayerNum, PosEncoding  = next(iter(dataloader_val))
+image_fft_r, image_fft_i, image, LayerNum, subjectNum, PosEncoding  = next(iter(dataloader_val))
 
 mask = torch.tensor(mask).to(device)
 mask_c = torch.tensor(mask_c).to(device)
@@ -186,7 +186,7 @@ for epoch in range(n_epoch):
     # For each batch in the dataloader
     for i, data in enumerate(dataloader, 0):
         netG.train(True)
-        image_fft_r, image_fft_i, image, LayerNum, PosEncoding = data
+        image_fft_r, image_fft_i, image, LayerNum, subjectNum, PosEncoding = data
         image = image.to(device)
         image_fft_i = image_fft_i.to(device)
         image_fft_r = image_fft_r.to(device)
@@ -242,7 +242,7 @@ for epoch in range(n_epoch):
 
                     for val_iter, data in tqdm(enumerate(dataloader_val,0)):
         
-                        image_fft_r, image_fft_i, image, LayerNum, PosEncoding = data
+                        image_fft_r, image_fft_i, image, LayerNum, subjectNum, PosEncoding = data
                         image = image.to(device)
                         image_fft_i = image_fft_i.to(device)
                         image_fft_r = image_fft_r.to(device)
