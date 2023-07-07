@@ -55,22 +55,22 @@ model1 = models.KspaceNetT1(ngpu).to(device)
 ## Load the model if exists, pre-trained model
 if  os.path.isfile(kmodel_dir2):
     model2 = torch.load(kmodel_dir2)
-    
+    print('K-spaceT2 model loaded!')   
 model2.eval()
     
 if  os.path.isfile(kmodel_dir1):
     model1 = torch.load(kmodel_dir1)
-    
+    print('K-spaceT1 model loaded!')   
 model1.eval()
 
 if  os.path.isfile(unetT1_dir):
     netG1 = torch.load(unetT1_dir)
-    
+    print('Unet-T1 model loaded!')
 netG1.eval()
     
 if  os.path.isfile(unetT2_dir):
     netG2 = torch.load(unetT2_dir)
-    
+    print('Unet-T2 model loaded!')
 netG2.eval()
 
 def infer_using_KspaceNet(image_fft_r,image_fft_i,LayerNum,model,mask,mask_c,t_c,t_p,PosEncoding):
