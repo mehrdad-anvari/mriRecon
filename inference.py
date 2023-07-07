@@ -35,14 +35,10 @@ dataloader_val = dl.DataLoader(dataset_val, batch_size=batch_size, shuffle=True,
 
 device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
 
-image_fft_r, image_fft_i, image, LayerNum, subjectNum, PosEncoding  = next(iter(dataloader_val))
+image_fft_r, image_fft_i, image, label, LayerNum, subjectNum, PosEncoding  = next(iter(dataloader_val))
 
 mask = torch.tensor(mask).to(device)
 mask_c = torch.tensor(mask_c).to(device)
-
-
-
-
 
 ## Define the model
 print('Define Models..')
@@ -133,7 +129,7 @@ with torch.no_grad():
     netG2.tarin(False)
     for val_iter, data in enumerate(dataloader_val,0):
 
-        image_fft_r, image_fft_i, image, LayerNum, subjectNum, PosEncoding = data
+        image_fft_r, image_fft_i, image, label, LayerNum, subjectNum, PosEncoding = data
         image = image.to(device)
         image_fft_i = image_fft_i.to(device)
         image_fft_r = image_fft_r.to(device)
@@ -152,6 +148,6 @@ with torch.no_grad():
         errG_fft, errG_mse, fakeT1 = cal_losses(fakeT1,good_imgs_T1,1)
         errG_fft, errG_mse, fakeT2 = cal_losses(fakeT2,good_imgs_T2,4)
 
-        save_slices(fakeT1,good_imgs_T1,fakeT2,good_imgs_T2,label=image[:,6,:,:],subjectNum=subjectNum,layerNum=LayerNum,root=save_to,percent=percent)
+        save_slices(fakeT1,good_imgs_T1,fakeT2,good_imgs_T2,label=label,subjectNum=subjectNum,layerNum=LayerNum,root=save_to,percent=percent)
 
             
