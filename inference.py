@@ -94,7 +94,7 @@ def infer_using_KspaceNet(image_fft_r,image_fft_i,LayerNum,model,mask,mask_c,t_c
     image_Predition = torch.abs(torch.tensor(image_Predition).float())
     return image_Predition
 
-def cal_losses(fake1,good_imgs1,Pred_slice):
+def replaceKnownSamples(fake1,good_imgs1,Pred_slice):
     fake_fft2 = torch.fft.fft2(fake1)
     good_img_fft2 = torch.fft.fft2(good_imgs1)
 
@@ -102,15 +102,7 @@ def cal_losses(fake1,good_imgs1,Pred_slice):
     fake_fft2 = torch.fft.ifftshift(fake_fft2)
     fake1 = torch.fft.ifft2(fake_fft2).float()
     
-    errG_fft_mse_r = torch.mean(torch.square(fake_fft2.real - good_img_fft2.real)) * 0.02
-    errG_fft_mse_i = torch.mean(torch.square(fake_fft2.imag - good_img_fft2.imag)) * 0.02
-    errG_fft = errG_fft_mse_r + errG_fft_mse_i
-
-    errG_numerator = torch.sqrt(torch.sum(torch.square(fake1 - good_imgs1)))
-    errG_denominator = torch.sqrt(torch.sum(torch.square(good_imgs1)))
-    errG_mse = (errG_numerator/errG_denominator)*15
-    
-    return errG_fft, errG_mse, fake1
+    return fake1
 
 def save_slices(fakeT1,T1,fakeT2,T2,label,subjectNum,layerNum,root,percent):
     dataUnit = np.zeros((257,257,5))
@@ -145,8 +137,8 @@ with torch.no_grad():
         fakeT1 = netG1(bad_imgs.float()).to(device) + bad_imgs[:,0,:,:][:,np.newaxis,:,:]
         fakeT2 = netG2(bad_imgs.float()).to(device) + bad_imgs[:,1,:,:][:,np.newaxis,:,:]
 
-        errG_fft, errG_mse, fakeT1 = cal_losses(fakeT1,good_imgs_T1,1)
-        errG_fft, errG_mse, fakeT2 = cal_losses(fakeT2,good_imgs_T2,4)
+        fakeT1 = replaceKnownSamples(fakeT1,good_imgs_T1,1)
+        fakeT2 = replaceKnownSamples(fakeT2,good_imgs_T2,4)
 
         save_slices(fakeT1,good_imgs_T1,fakeT2,good_imgs_T2,label=label,subjectNum=subjectNum,layerNum=LayerNum,root=save_to,percent=percent)
 

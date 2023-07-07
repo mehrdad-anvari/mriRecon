@@ -34,7 +34,7 @@ class Brats2013_2D(Dataset):
         self.data = []
         for file_path in file_list:
             layer_num = file_path.split("\\")[-1].split(".")[-2].split("_")[-1]
-            subject_num = file_path.split("\\")[-1].split(".")[-2].split("_")[-2]
+            subject_num = file_path.split("/")[-1].split(".")[-2].split("_")[-2]
             self.data.append([file_path, int(layer_num), int(subject_num)])
 
     def __len__(self):
@@ -43,6 +43,7 @@ class Brats2013_2D(Dataset):
     def __getitem__(self, idx):
         img_path, LayerNum, subjectNum = self.data[idx]
         data, image_header = load(img_path)
+        data = np.transpose(data,(2,0,1))
         image = torch.tensor(data[0:6,:,:]).to(device).to(torch.float32)
         label = torch.tensor(data[6,:,:][np.newaxis,:,:]).to(device).to(torch.float32)
         image_fft_r,image_fft_i = cal_fft_for_all_channels(image)
