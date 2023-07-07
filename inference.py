@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import dataloader as dl
 import os
-import models
+from models import *
 import utils
 import torch.optim as optim
 import numpy as np
@@ -42,12 +42,12 @@ mask_c = torch.tensor(mask_c).to(device)
 
 ## Define the model
 print('Define Models..')
-netG1 = models.u_net_bn(ngpu).to(device)
+netG1 = u_net_bn(ngpu).to(device)
 netG1 = netG1.float()
-netG2 = models.u_net_bn(ngpu).to(device)
+netG2 = u_net_bn(ngpu).to(device)
 netG2 = netG2.float()
-model2 = models.KspaceNetT1(ngpu).to(device)
-model1 = models.KspaceNetT1(ngpu).to(device)
+model2 = KspaceNetT1(ngpu).to(device)
+model1 = KspaceNetT1(ngpu).to(device)
 
 ## Load the model if exists, pre-trained model
 if  os.path.isfile(kmodel_dir2):
@@ -126,7 +126,7 @@ with torch.no_grad():
     model1.train(False)
     model2.train(False)
     netG1.train(False)
-    netG2.tarin(False)
+    netG2.train(False)
     for val_iter, data in enumerate(dataloader_val,0):
 
         image_fft_r, image_fft_i, image, label, LayerNum, subjectNum, PosEncoding = data
