@@ -11,9 +11,10 @@ from scipy.io import savemat
 from medpy.io import load, save
 
 
-percent = 10
+percent = 40
 kmodel_dir1 = '/content/mriRecon/trainedModels/modelt1.pt'
 kmodel_dir2 = '/content/mriRecon/trainedModels/modelt2.pt'
+save_to = f'/content/drive/MyDrive/results/{percent}/'
 
 unetT1_dir = f'/content/drive/MyDrive/trainedModels/Unet/T1/{percent}/model_unet.pt'
 unetT2_dir = f'/content/drive/MyDrive/trainedModels/Unet/T2/{percent}/model_unet.pt'
@@ -145,6 +146,6 @@ for val_iter, data in enumerate(dataloader_val,0):
     fakeT1 = netG1(bad_imgs.float()).to(device) + bad_imgs[:,0,:,:][:,np.newaxis,:,:]
     fakeT2 = netG2(bad_imgs.float()).to(device) + bad_imgs[:,1,:,:][:,np.newaxis,:,:]
 
-    save_slices(fakeT1,good_imgs_T1,fakeT2,good_imgs_T2,label=image[:,6,:,:],subjectNum=subjectNum,layerNum=LayerNum,root='/content/',percent=percent)
+    save_slices(fakeT1,good_imgs_T1,fakeT2,good_imgs_T2,label=image[:,6,:,:],subjectNum=subjectNum,layerNum=LayerNum,root=save_to,percent=percent)
 
             
