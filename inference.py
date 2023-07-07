@@ -125,27 +125,27 @@ def save_slices(fakeT1,T1,fakeT2,T2,label,subjectNum,layerNum,root,percent):
         dataUnit[:,:,3]=T2.detach().numpy()
         dataUnit[:,:,4]=label.detach().numpy()
         save(dataUnit, root + f'/inference/{percent}/' + f'{subjectNum[i]}_{layerNum[i]}.mha', use_compression = True)
+        
+with torch.no_grad():
+    for val_iter, data in enumerate(dataloader_val,0):
 
+        image_fft_r, image_fft_i, image, LayerNum, subjectNum, PosEncoding = data
+        image = image.to(device)
+        image_fft_i = image_fft_i.to(device)
+        image_fft_r = image_fft_r.to(device)
+        model1.train(False)
+        model2.train(False)
+        T1_pred = infer_using_KspaceNet(image_fft_r,image_fft_i,LayerNum,model=model1,mask=mask,mask_c=mask_c,t_c=4,t_p=1,PosEncoding=PosEncoding.to(device))
+        T2_pred = infer_using_KspaceNet(image_fft_r,image_fft_i,LayerNum,model=model2,mask=mask,mask_c=mask_c,t_c=1,t_p=4,PosEncoding=PosEncoding.to(device))
 
-for val_iter, data in enumerate(dataloader_val,0):
+        bad_imgs  = torch.concat((T1_pred,T2_pred),dim=1).cuda()
 
-    image_fft_r, image_fft_i, image, LayerNum, subjectNum, PosEncoding = data
-    image = image.to(device)
-    image_fft_i = image_fft_i.to(device)
-    image_fft_r = image_fft_r.to(device)
-    model1.train(False)
-    model2.train(False)
-    T1_pred = infer_using_KspaceNet(image_fft_r,image_fft_i,LayerNum,model=model1,mask=mask,mask_c=mask_c,t_c=4,t_p=1,PosEncoding=PosEncoding.to(device))
-    T2_pred = infer_using_KspaceNet(image_fft_r,image_fft_i,LayerNum,model=model2,mask=mask,mask_c=mask_c,t_c=1,t_p=4,PosEncoding=PosEncoding.to(device))
+        good_imgs_T1 = image[:,1,:,:][:,np.newaxis,:,:].cuda()
+        good_imgs_T2 = image[:,4,:,:][:,np.newaxis,:,:].cuda()
 
-    bad_imgs  = torch.concat((T1_pred,T2_pred),dim=1).cuda()
+        fakeT1 = netG1(bad_imgs.float()).to(device) + bad_imgs[:,0,:,:][:,np.newaxis,:,:]
+        fakeT2 = netG2(bad_imgs.float()).to(device) + bad_imgs[:,1,:,:][:,np.newaxis,:,:]
 
-    good_imgs_T1 = image[:,1,:,:][:,np.newaxis,:,:].cuda()
-    good_imgs_T2 = image[:,4,:,:][:,np.newaxis,:,:].cuda()
-
-    fakeT1 = netG1(bad_imgs.float()).to(device) + bad_imgs[:,0,:,:][:,np.newaxis,:,:]
-    fakeT2 = netG2(bad_imgs.float()).to(device) + bad_imgs[:,1,:,:][:,np.newaxis,:,:]
-
-    save_slices(fakeT1,good_imgs_T1,fakeT2,good_imgs_T2,label=image[:,6,:,:],subjectNum=subjectNum,layerNum=LayerNum,root=save_to,percent=percent)
+        save_slices(fakeT1,good_imgs_T1,fakeT2,good_imgs_T2,label=image[:,6,:,:],subjectNum=subjectNum,layerNum=LayerNum,root=save_to,percent=percent)
 
             
