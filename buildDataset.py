@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import glob
 
+# training folder :  from 1 to 264 for training 
+# traiging folder :  from 264 to end for validation
+# testing folder :  all are used for test
 
 save_dir = '/content/BRATS2015_Training_Processed'
 ls_files_T1 = glob.glob('/content/BRATS2015_Training/*/*/*MR_T1.*/*.mha')
